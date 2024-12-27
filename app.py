@@ -10,7 +10,7 @@ model_path = "model.pkl"  # Update with the correct path
 model = joblib.load(model_path)
 
 # Load dataset (replace 'dataset.csv' with your dataset file)
-data_path = "dataset.csv"  # Update with the correct path
+data_path = "/com.netflix.mediaclient_reviews_min_100.csv"  # Update with the correct path
 data = pd.read_csv(data_path)
 
 # Streamlit app
