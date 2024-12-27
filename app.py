@@ -1,6 +1,26 @@
 import streamlit as st
 import pickle
 
+import logging
+
+logging.basicConfig(level=logging.ERROR)
+
+try:
+    with open('text_classifier.pkl', 'rb') as model_file:
+        model = pickle.load(model_file)
+except Exception as e:
+    logging.error(f"Error loading model: {e}")
+    st.error(f"Failed to load the model: {e}")
+
+try:
+    with open('tfidf_vectorizer.pkl', 'rb') as vectorizer_file:
+        vectorizer = pickle.load(vectorizer_file)
+except Exception as e:
+    logging.error(f"Error loading vectorizer: {e}")
+    st.error(f"Failed to load the vectorizer: {e}")
+
+
+
 # Load Model dan Vectorizer
 with open('text_classifier.pkl', 'rb') as model_file:
     model = pickle.load(model_file)
