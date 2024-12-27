@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import io
 
 # Memuat dataset
-df = pd.read_csv('/com.netflix.mediaclient_reviews_min_100.csv')  # Ganti dengan path dataset Anda
+df = pd.read_csv('com.netflix.mediaclient_reviews_min_100.csv')  # Ganti dengan path dataset Anda
 
 # Fungsi untuk mendapatkan sentimen
 def get_sentiment(text):
