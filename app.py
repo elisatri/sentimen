@@ -39,9 +39,15 @@ def predict_sentiment(text):
         # Preprocessing teks input
         cleaned_text = clean_text(text)
         transformed_text = vectorizer.transform([cleaned_text])
+        
+        # Menampilkan bentuk data yang sudah diproses untuk debugging
         st.write(f"Transformed text shape: {transformed_text.shape}")  # Debugging
         prediction = model.predict(transformed_text)
+        
+        # Menampilkan prediksi raw untuk debugging
         st.write(f"Raw prediction: {prediction}")  # Debugging
+
+        # Menentukan sentimen berdasarkan hasil prediksi
         sentiment = "Positive" if prediction[0] == 1 else "Negative"
         return sentiment
     except Exception as e:
