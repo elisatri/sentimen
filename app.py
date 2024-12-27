@@ -1,54 +1,53 @@
 import streamlit as st
-import pickle
-import re
-from textblob import TextBlob
-from sklearn.feature_extraction.text import TfidfVectorizer
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import Pipeline
+import joblib
 
-# Fungsi untuk preprocessing teks
-def clean_text(text):
-    text = text.lower()  # Lowercase
-    text = re.sub(r'http\S+', '', text)  # Remove URLs
-    text = re.sub(r'[^a-zA-Z\s]', '', text)  # Remove non-alphabetical characters
-    return text
+# Load pre-trained model (replace 'model.pkl' with your actual model file)
+model_path = "model.pkl"  # Update with the correct path
+model = joblib.load(model_path)
 
-# Load model dan vectorizer
-try:
-    with open('text_classifier.pkl', 'rb') as model_file:
-        model = pickle.load(model_file)
-except Exception as e:
-    st.error(f"Failed to load model: {e}")
+# Load dataset (replace 'dataset.csv' with your dataset file)
+data_path = "dataset.csv"  # Update with the correct path
+data = pd.read_csv(data_path)
 
-try:
-    with open('tfidf_vectorizer.pkl', 'rb') as vectorizer_file:
-        vectorizer = pickle.load(vectorizer_file)
-except Exception as e:
-    st.error(f"Failed to load vectorizer: {e}")
+# Streamlit app
+def main():
+    st.title("Sentiment Analysis: Netflix Reviews")
 
-# Fungsi untuk prediksi sentimen
-def predict_sentiment(text):
-    """Memprediksi sentimen dari teks input."""
-    try:
-        # Preprocessing teks input
-        cleaned_text = clean_text(text)
-        transformed_text = vectorizer.transform([cleaned_text])  # Menggunakan vectorizer untuk transformasi
-        prediction = model.predict(transformed_text)  # Model prediksi
-        sentiment = "Positive" if prediction[0] == 1 else "Negative" if prediction[0] == 0 else "Neutral"
-        return sentiment
-    except Exception as e:
-        st.error(f"Error in prediction: {e}")
-        return "Error in prediction"
+    st.sidebar.header("Navigation")
+    options = ["Overview", "Predict Sentiment", "Explore Sentiments"]
+    choice = st.sidebar.radio("Go to:", options)
 
-# Aplikasi Streamlit
-st.title("Aplikasi Sentimen Ulasan Netflix")
+    if choice == "Overview":
+        st.header("Dataset Overview")
+        st.write("### Sample Data")
+        st.write(data.head())
+        st.write("### Sentiment Distribution")
+        sentiment_counts = data['sentiment'].value_counts()
+        st.bar_chart(sentiment_counts)
 
-# Input dari pengguna
-input_text = st.text_area("Masukkan teks ulasan:", "Ketik ulasan di sini...")
+    elif choice == "Predict Sentiment":
+        st.header("Predict Sentiment of a Review")
+        user_input = st.text_area("Enter a review:", "")
 
-# Tombol untuk prediksi
-if st.button("Prediksi"):
-    if input_text.strip():
-        result = predict_sentiment(input_text)
-        st.success(f"Hasil Prediksi: {result}")
-    else:
-        st.warning("Silakan masukkan teks untuk diprediksi.")
+        if st.button("Predict"):
+            if user_input:
+                prediction = model.predict([user_input])[0]
+                st.write(f"### Sentiment: {prediction}")
+            else:
+                st.write("Please enter a review to predict its sentiment.")
 
+    elif choice == "Explore Sentiments":
+        st.header("Explore Reviews by Sentiment")
+
+        sentiment = st.selectbox("Select Sentiment", ["positive", "negative", "neutral"])
+        filtered_data = data[data['sentiment'] == sentiment]
+
+        st.write(f"### {sentiment.capitalize()} Reviews")
+        st.write(filtered_data[['review']].head(20))
+
+if __name__ == "__main__":
+    main()
