@@ -4,21 +4,19 @@ from textblob import TextBlob
 from sklearn.preprocessing import LabelEncoder
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
-import io
 
 # Memuat dataset
 df = pd.read_csv('com.netflix.mediaclient_reviews_min_100.csv')  # Ganti dengan path dataset Anda
 
 # Fungsi untuk mendapatkan sentimen
-def get_sentiment(text):
-    analysis = TextBlob(text)
-    if analysis.sentiment.polarity < 0:
+def get_sentiment(text, score):
+    if score < 3:  # Jika skor kurang dari 3, anggap sebagai negatif
         return 'negative'
-    else:
+    else:  # Jika skor 3 atau lebih, anggap sebagai positif
         return 'positive'
 
-# Menambahkan kolom sentimen
-df['sentiment'] = df['content'].apply(get_sentiment)
+# Menambahkan kolom sentimen berdasarkan skor
+df['sentiment'] = df.apply(lambda row: get_sentiment(row['content'], row['score']), axis=1)
 
 # Mengencode sentimen ke bentuk numerik
 label_encoder = LabelEncoder()
@@ -41,8 +39,12 @@ input_text = st.text_area("Masukkan teks ulasan:", "Ketik ulasan di sini...")
 # Tombol Prediksi
 if st.button("Prediksi"):
     if input_text.strip():
+        # Di sini, Anda perlu menetapkan skor untuk input_text
+        # Misalnya, Anda bisa menetapkan skor manual untuk pengujian
+        input_score = 3  # Ganti dengan metode untuk mendapatkan skor dari input
+
         # Prediksi sentimen
-        sentiment = get_sentiment(input_text)
+        sentiment = get_sentiment(input_text, input_score)
         st.success(f"Hasil Prediksi: {sentiment.capitalize()}")
 
         # Mengambil teks dari semua ulasan untuk word cloud
