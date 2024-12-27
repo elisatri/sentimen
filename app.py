@@ -12,9 +12,11 @@ df = pd.read_csv('com.netflix.mediaclient_reviews_min_100.csv')  # Ganti dengan 
 # Fungsi untuk mendapatkan sentimen
 def get_sentiment(text):
     analysis = TextBlob(text)
-    if analysis.sentiment.polarity > 0:
+     polarity = analysis.sentiment.polarity
+    st.write(f"Polaritas: {polarity}")  # Menampilkan nilai polaritas
+    if polarity > 0:
         return 'positive'
-    elif analysis.sentiment.polarity < 0:
+    elif polarity < 0:
         return 'negative'
     else:
         return 'neutral'
