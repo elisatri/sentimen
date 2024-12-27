@@ -1,35 +1,38 @@
 import streamlit as st
-import pickle
-import logging
+import pandas as pd
+from textblob import TextBlob
+from sklearn.preprocessing import LabelEncoder
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+import io
 
-# Mengatur logging
-logging.basicConfig(level=logging.ERROR)
+# Memuat dataset
+df = pd.read_csv('/com.netflix.mediaclient_reviews_min_100.csv')  # Ganti dengan path dataset Anda
 
-# Menggunakan fungsi untuk memuat model dan vectorizer
-def load_model(filename):
-    try:
-        with open(filename, 'rb') as file:
-            return pickle.load(file)
-    except Exception as e:
-        logging.error(f"Error loading {filename}: {e}")
-        st.error(f"Failed to load the model: {e}")
-        return None
+# Fungsi untuk mendapatkan sentimen
+def get_sentiment(text):
+    analysis = TextBlob(text)
+    if analysis.sentiment.polarity > 0:
+        return 'positive'
+    elif analysis.sentiment.polarity < 0:
+        return 'negative'
+    else:
+        return 'neutral'
 
-# Memuat Model dan Vectorizer
-model = load_model('text_classifier.pkl')
-vectorizer = load_model('tfidf_vectorizer.pkl')
+# Menambahkan kolom sentimen
+df['sentiment'] = df['content'].apply(get_sentiment)
 
-# Memastikan model dan vectorizer berhasil dimuat
-if model is None or vectorizer is None:
-    st.stop()  # Menghentikan aplikasi jika ada kesalahan
+# Mengencode sentimen ke bentuk numerik
+label_encoder = LabelEncoder()
+df['sentiment_encoded'] = label_encoder.fit_transform(df['sentiment'])
 
-# Fungsi Prediksi
-def predict_sentiment(text):
-    """Memprediksi sentimen dari teks input."""
-    transformed_text = vectorizer.transform([text])  # Preprocessing teks
-    prediction = model.predict(transformed_text)  # Prediksi
-    sentiment = "Positive" if prediction[0] == 1 else "Negative"
-    return sentiment
+# Memisahkan ulasan positif dan negatif
+positive_reviews = df[df['sentiment_encoded'] == 1]
+negative_reviews = df[df['sentiment_encoded'] == 0]
+
+# Fungsi untuk membuat word cloud
+def create_wordcloud(text):
+    return WordCloud(stopwords='english', background_color='white', width=800, height=400).generate(text)
 
 # Aplikasi Streamlit
 st.title("Aplikasi Sentimen Netflix")
@@ -40,7 +43,29 @@ input_text = st.text_area("Masukkan teks ulasan:", "Ketik ulasan di sini...")
 # Tombol Prediksi
 if st.button("Prediksi"):
     if input_text.strip():
-        result = predict_sentiment(input_text)
-        st.success(f"Hasil Prediksi: {result}")
+        # Prediksi sentimen
+        sentiment = get_sentiment(input_text)
+        st.success(f"Hasil Prediksi: {sentiment.capitalize()}")
+
+        # Mengambil teks dari semua ulasan untuk word cloud
+        positive_text = ' '.join(positive_reviews['content'])
+        negative_text = ' '.join(negative_reviews['content'])
+
+        # Membuat word cloud untuk positif dan negatif
+        positive_wordcloud = create_wordcloud(positive_text)
+        negative_wordcloud = create_wordcloud(negative_text)
+
+        # Menampilkan word cloud
+        st.subheader("Word Cloud Sentimen Positif")
+        fig, ax = plt.subplots()
+        ax.imshow(positive_wordcloud, interpolation='bilinear')
+        ax.axis('off')
+        st.pyplot(fig)
+
+        st.subheader("Word Cloud Sentimen Negatif")
+        fig, ax = plt.subplots()
+        ax.imshow(negative_wordcloud, interpolation='bilinear')
+        ax.axis('off')
+        st.pyplot(fig)
     else:
         st.warning("Silakan masukkan teks untuk diprediksi.")
