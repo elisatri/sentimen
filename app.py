@@ -14,7 +14,7 @@ def get_sentiment(text):
     analysis = TextBlob(text)
     if analysis.sentiment.polarity > 3:
         return 'positive'
-    elif analysis.sentiment.polarity = 3:
+    elif analysis.sentiment.polarity == 3:
         return 'negative'
     else:
         return 'neutral'
