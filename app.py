@@ -1,32 +1,27 @@
 import streamlit as st
 import pickle
-
 import logging
 
+# Mengatur logging
 logging.basicConfig(level=logging.ERROR)
 
-try:
-    with open('text_classifier.pkl', 'rb') as model_file:
-        model = pickle.load(model_file)
-except Exception as e:
-    logging.error(f"Error loading model: {e}")
-    st.error(f"Failed to load the model: {e}")
+# Menggunakan fungsi untuk memuat model dan vectorizer
+def load_model(filename):
+    try:
+        with open(filename, 'rb') as file:
+            return pickle.load(file)
+    except Exception as e:
+        logging.error(f"Error loading {filename}: {e}")
+        st.error(f"Failed to load the model: {e}")
+        return None
 
-try:
-    with open('tfidf_vectorizer.pkl', 'rb') as vectorizer_file:
-        vectorizer = pickle.load(vectorizer_file)
-except Exception as e:
-    logging.error(f"Error loading vectorizer: {e}")
-    st.error(f"Failed to load the vectorizer: {e}")
+# Memuat Model dan Vectorizer
+model = load_model('text_classifier.pkl')
+vectorizer = load_model('tfidf_vectorizer.pkl')
 
-
-
-# Load Model dan Vectorizer
-with open('text_classifier.pkl', 'rb') as model_file:
-    model = pickle.load(model_file)
-
-with open('tfidf_vectorizer.pkl', 'rb') as vectorizer_file:
-    vectorizer = pickle.load(vectorizer_file)
+# Memastikan model dan vectorizer berhasil dimuat
+if model is None or vectorizer is None:
+    st.stop()  # Menghentikan aplikasi jika ada kesalahan
 
 # Fungsi Prediksi
 def predict_sentiment(text):
