@@ -4,6 +4,7 @@ from textblob import TextBlob
 from sklearn.preprocessing import LabelEncoder
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
+import io
 
 # Memuat dataset
 df = pd.read_csv('com.netflix.mediaclient_reviews_min_100.csv')  # Ganti dengan path dataset Anda
@@ -11,11 +12,9 @@ df = pd.read_csv('com.netflix.mediaclient_reviews_min_100.csv')  # Ganti dengan 
 # Fungsi untuk mendapatkan sentimen
 def get_sentiment(text):
     analysis = TextBlob(text)
-    polarity = analysis.sentiment.polarity
-    st.write(f"Polaritas: {polarity}")  # Menampilkan nilai polaritas
-    if polarity > 0:
+    if analysis.sentiment.polarity > 3:
         return 'positive'
-    elif polarity < 0:
+    elif analysis.sentiment.polarity < 0:
         return 'negative'
     else:
         return 'neutral'
