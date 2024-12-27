@@ -10,12 +10,18 @@ df = pd.read_csv('com.netflix.mediaclient_reviews_min_100.csv')  # Ganti dengan 
 
 # Fungsi untuk mendapatkan sentimen
 def get_sentiment(text, score):
-    if score < 3:  # Jika skor kurang dari 3, anggap sebagai negatif
+    analysis = TextBlob(text)
+    polarity = analysis.sentiment.polarity
+    
+    # Pertimbangkan baik polaritas dan skor
+    if score < 3 or polarity < 0:
         return 'negative'
-    else:  # Jika skor 3 atau lebih, anggap sebagai positif
+    elif score > 2 or polarity > 0:
         return 'positive'
+    else:
+        return 'neutral'
 
-# Menambahkan kolom sentimen berdasarkan skor
+# Menambahkan kolom sentimen berdasarkan skor dan analisis teks
 df['sentiment'] = df.apply(lambda row: get_sentiment(row['content'], row['score']), axis=1)
 
 # Mengencode sentimen ke bentuk numerik
@@ -39,9 +45,8 @@ input_text = st.text_area("Masukkan teks ulasan:", "Ketik ulasan di sini...")
 # Tombol Prediksi
 if st.button("Prediksi"):
     if input_text.strip():
-        # Di sini, Anda perlu menetapkan skor untuk input_text
-        # Misalnya, Anda bisa menetapkan skor manual untuk pengujian
-        input_score = 3  # Ganti dengan metode untuk mendapatkan skor dari input
+        # Misalnya, Anda memberikan skor manual untuk pengujian
+        input_score = 2  # Ganti dengan metode untuk mendapatkan skor dari input
 
         # Prediksi sentimen
         sentiment = get_sentiment(input_text, input_score)
